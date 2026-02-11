@@ -49,10 +49,31 @@ const getYad2Response = async (url) => {
             Object.defineProperty(navigator, 'languages', { get: () => ['he-IL', 'he', 'en-US', 'en'] });
             window.chrome = { runtime: {} };
         });
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-        // Random delay to appear more human
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
-        return await page.content();
+
+        // First visit yad2 homepage to get cookies
+        await page.goto('https://www.yad2.co.il', { waitUntil: 'networkidle2', timeout: 30000 });
+        await new Promise(r => setTimeout(r, 3000 + Math.random() * 2000));
+
+        // Now navigate to the actual search URL
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+        // Wait for either __NEXT_DATA__ to appear or up to 30 seconds
+        // ShieldSquare JS challenge usually resolves within 5-15 seconds
+        let content = null;
+        for (let i = 0; i < 10; i++) {
+            await new Promise(r => setTimeout(r, 3000));
+            content = await page.content();
+            if (content.includes('__NEXT_DATA__')) {
+                console.log(`Found __NEXT_DATA__ after ${(i + 1) * 3}s`);
+                return content;
+            }
+            const title = await page.title();
+            if (title !== 'ShieldSquare Captcha') {
+                return content;
+            }
+            console.log(`Waiting for challenge to resolve... ${(i + 1) * 3}s`);
+        }
+        return content;
     } catch (err) {
         console.log('Page fetch error:', err.message);
         return null;
@@ -73,8 +94,11 @@ const extractListings = async (url, retries = 3) => {
         const titleText = $("title").first().text();
         if (titleText === "ShieldSquare Captcha") {
             if (attempt < retries) {
-                console.log(`Bot detection on attempt ${attempt}, retrying in ${attempt * 5}s...`);
-                await sleep(attempt * 5000);
+                // Close browser entirely to get fresh fingerprint
+                await closeBrowser();
+                const waitTime = attempt * 15000;
+                console.log(`Bot detection on attempt ${attempt}, closing browser and retrying in ${waitTime/1000}s...`);
+                await sleep(waitTime);
                 continue;
             }
             throw new Error("Bot detection (all retries failed)");
