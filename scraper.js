@@ -143,9 +143,20 @@ const scrape = async (topic, url) => {
         const listings = await extractListings(url);
         const newListings = await checkForNewListings(listings, topic);
         if (newListings.length > 0) {
-            const formatted = newListings.map(formatListing).join("\n----------\n");
-            const msg = `🏠 ${newListings.length} new listings:\n----------\n${formatted}`
-            await telenode.sendTextMessage(msg, chatId);
+            await telenode.sendTextMessage(`🏠 ${newListings.length} new listings found:`, chatId);
+            // Send in batches to avoid Telegram's 4096 char limit
+            let batch = '';
+            for (const listing of newListings) {
+                const entry = formatListing(listing) + "\n----------\n";
+                if (batch.length + entry.length > 3500) {
+                    await telenode.sendTextMessage(batch, chatId);
+                    batch = '';
+                }
+                batch += entry;
+            }
+            if (batch) {
+                await telenode.sendTextMessage(batch, chatId);
+            }
         } else {
             await telenode.sendTextMessage("No new items were added", chatId);
         }
