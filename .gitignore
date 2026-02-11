@@ -4,3 +4,5 @@ node_modules
 localTests.js
 
 push_me
+data/
+package-lock.json

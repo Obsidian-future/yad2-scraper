@@ -1,14 +1,19 @@
 {
   "name": "yad2-scraper",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "2.0.0",
+  "main": "server.js",
   "author": "Niv Ezra",
   "license": "MIT",
   "scripts": {
+    "start": "node server.js",
     "scrape": "node scraper.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
+    "express": "^4.21.0",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^24.37.2",
+    "sql.js": "^1.10.0",
     "telenode-js": "^1.1.5"
   }
 }

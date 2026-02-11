@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yad2 Scraper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Yad2 Scraper</h1>
+
+        <div class="add-form">
+            <h2>Add Tracked Link</h2>
+            <form id="add-link-form">
+                <div class="form-row">
+                    <input type="text" id="link-name" placeholder="Name (e.g. Zichron below 3m)" required>
+                    <input type="url" id="link-url" placeholder="Yad2 URL" required>
+                    <button type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="actions-bar">
+            <button id="scan-all-btn" class="btn-scan-all">Scan All Now</button>
+        </div>
+
+        <div id="links-container"></div>
+    </div>
+
+    <div id="listings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
