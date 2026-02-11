@@ -13,6 +13,8 @@
     "express": "^4.21.0",
     "node-cron": "^3.0.3",
     "puppeteer": "^24.37.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "sql.js": "^1.10.0",
     "telenode-js": "^1.1.5"
   }
