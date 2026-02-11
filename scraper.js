@@ -8,20 +8,32 @@ const config = require('./config.json');
 
 let browser = null;
 
+const PROXY_URL = process.env.PROXY_URL || config.proxyUrl || null;
+
 const getBrowser = async () => {
     if (!browser || !browser.connected) {
-        browser = await puppeteer.launch({
-            headless: 'new',
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-blink-features=AutomationControlled',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gpu',
-                '--window-size=1920,1080'
-            ]
-        });
+        const args = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+            '--window-size=1920,1080'
+        ];
+        if (PROXY_URL) {
+            const proxyHost = PROXY_URL.replace(/^https?:\/\//, '').split('@').pop();
+            args.push(`--proxy-server=http://${proxyHost}`);
+            console.log(`Using proxy: ${proxyHost}`);
+        }
+        browser = await puppeteer.launch({ headless: 'new', args });
+
+        // If proxy has auth, set it on each new page via authenticate
+        if (PROXY_URL && PROXY_URL.includes('@')) {
+            const authPart = PROXY_URL.replace(/^https?:\/\//, '').split('@')[0];
+            const [username, password] = authPart.split(':');
+            browser._proxyAuth = { username, password };
+        }
     }
     return browser;
 };
@@ -30,6 +42,10 @@ const getYad2Response = async (url) => {
     const b = await getBrowser();
     const page = await b.newPage();
     try {
+        // Set proxy auth if needed
+        if (b._proxyAuth) {
+            await page.authenticate(b._proxyAuth);
+        }
         await page.setViewport({ width: 1920, height: 1080 });
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
         await page.setExtraHTTPHeaders({

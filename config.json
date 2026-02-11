@@ -1,6 +1,7 @@
 {
   "telegramApiToken": "8024465312:AAFPTO5HIZUEHtDtnjEhQyptnEMK3wkU3_c",
   "chatId": "1981705566",
+  "proxyUrl": null,
   "projects": [
     {
       "topic": "zichron-below-3m",
