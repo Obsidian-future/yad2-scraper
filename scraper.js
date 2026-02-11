@@ -38,21 +38,27 @@ const extractListings = async (url) => {
         throw new Error("Could not find listing data in page");
     }
 
-    // Find the query that contains feed items
+    // Find the query that contains listings
     let items = [];
     for (const query of queries) {
-        const pages = query?.state?.data?.pages;
-        if (pages) {
-            for (const page of pages) {
-                if (page?.data) {
-                    items = items.concat(page.data);
-                }
+        const data = query?.state?.data;
+        if (!data) continue;
+        // New Yad2 structure: data has "private" and "agency" arrays
+        if (Array.isArray(data.private)) {
+            items = items.concat(data.private);
+        }
+        if (Array.isArray(data.agency)) {
+            items = items.concat(data.agency);
+        }
+        // Fallback: paginated data
+        if (data.pages) {
+            for (const page of data.pages) {
+                if (page?.data) items = items.concat(page.data);
             }
         }
-        // Also handle non-paginated data
-        const data = query?.state?.data?.data;
-        if (Array.isArray(data)) {
-            items = items.concat(data);
+        // Fallback: flat data array
+        if (Array.isArray(data.data)) {
+            items = items.concat(data.data);
         }
     }
 
